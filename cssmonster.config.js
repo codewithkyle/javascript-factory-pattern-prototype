@@ -1,6 +1,6 @@
 module.exports = {
     sources: "./src",
-    outDir: "./_compiled/css",
+    outDir: "./public/css",
     purgeCSS: {
         content: ["./public/*.html", "./public/js/*.js"],
     },

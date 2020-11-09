@@ -1,7 +1,7 @@
 {
   "scripts": {
-    "reset": "rm -rf ./_compiled",
-    "build": "tsc && cssmonster && djinnjs",
+    "reset": "rm -rf ./public/js && rm -rf ./public/css",
+    "build": "npm run reset && tsc && cssmonster",
     "brixi": "brixi",
     "preview": "serve ./public/"
   },
@@ -9,7 +9,6 @@
   "dependencies": {
     "brixi": "^0.2.3",
     "cssmonster": "^0.3.1",
-    "djinnjs": "^0.2.1",
     "serve": "^11.3.2",
     "typescript": "^4.0.5",
     "wwibs": "^0.1.2"

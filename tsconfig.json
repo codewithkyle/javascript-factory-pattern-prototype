@@ -7,7 +7,7 @@
         "skipLibCheck": true,
         "skipDefaultLibCheck": true,
         "lib": ["DOM", "ES2020"],
-        "outDir": "./_compiled/js"
+        "outDir": "./public/js"
     },
     "include": ["src"]
 }
