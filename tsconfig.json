@@ -1,0 +1,13 @@
+{
+    "compilerOptions": {
+        "target": "ES2019",
+        "allowJs": true,
+        "checkJs": false,
+        "module": "ES2020",
+        "skipLibCheck": true,
+        "skipDefaultLibCheck": true,
+        "lib": ["DOM", "ES2020"],
+        "outDir": "./_compiled/js"
+    },
+    "include": ["src"]
+}
