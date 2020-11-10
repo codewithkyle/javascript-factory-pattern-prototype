@@ -1,0 +1,26 @@
+{
+    "success": true,
+    "error": null,
+    "data": [
+        {
+            "name": "Blue",
+            "entryId": 1
+        },
+        {
+            "name": "Red",
+            "entryId": 2
+        },
+        {
+            "name": "Yellow",
+            "entryId": 3
+        },
+        {
+            "name": "Green",
+            "entryId": 4
+        },
+        {
+            "name": "Pink",
+            "entryId": 5
+        }
+    ]
+}

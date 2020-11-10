@@ -27,6 +27,20 @@ class DBManager {
         const e = event.data;
         switch (e.type) {
             case "ready":
+                this.ready = true;
+                this.worker.postMessage({
+                    type: "sync",
+                    data: [
+                        {
+                            table: "colors",
+                            url: `${location.origin}/api/colors.json`,
+                        },
+                        {
+                            table: "patterns",
+                            url: `${location.origin}/api/patterns.json`,
+                        }
+                    ]
+                });
                 break;
             case "error":
                 console.error(e.data);

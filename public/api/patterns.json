@@ -1,0 +1,34 @@
+{
+    "success": true,
+    "error": null,
+    "data": [
+        {
+            "name": "Horizontal Stripes",
+            "entryId": 6
+        },
+        {
+            "name": "Vertical Stripes",
+            "entryId": 7
+        },
+        {
+            "name": "Horizontal and Vertical Stripes",
+            "entryId": 8
+        },
+        {
+            "name": "Glossy",
+            "entryId": 9
+        },
+        {
+            "name": "Matte",
+            "entryId": 10
+        },
+        {
+            "name": "Single Vertical Stripe",
+            "entryId": 11
+        },
+        {
+            "name": "Single Horizontal Stripe",
+            "entryId": 12
+        }
+    ]
+}

@@ -1,47 +1,126 @@
-// idbRequest.onupgradeneeded = (event) => {
-//     
-//     
-//     objectStore.createIndex("hp", "hp", { unique: false });
-//     objectStore.createIndex("ac", "ac", { unique: false });
-//     objectStore.createIndex("str", "str", { unique: false });
-//     objectStore.createIndex("int", "int", { unique: false });
-//     objectStore.createIndex("wis", "wis", { unique: false });
-//     objectStore.createIndex("cha", "cha", { unique: false });
-//     objectStore.createIndex("dex", "dex", { unique: false });
-//     objectStore.createIndex("con", "con", { unique: false });
-//     objectStore.createIndex("actions", "actions", { unique: false });
-//     objectStore.createIndex("abilities", "abilities", { unique: false });
-// };
 class IDBWorker {
     constructor() {
         self.onmessage = this.inbox.bind(this);
         this.idb = null;
     }
-    async upgradeDatabase(tables) {
-        var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m;
-        for (let t = 0; t < tables.length; t++) {
-            try {
-                const transaction = this.idb.transaction(tables[t].name, "readwrite");
-                // Do nothing when transactions are successful, we can't modify existing tables in IDB
+    sync(data) {
+        let synced = 0;
+        return new Promise((resolve, reject) => {
+            for (let i = 0; i < data.length; i++) {
+                fetch(data[i].url, {
+                    headers: new Headers({
+                        Accept: "application/json"
+                    })
+                })
+                    .then(request => request.json())
+                    .then(response => {
+                    const tx = this.idb.transaction(data[i].table, 'readwrite');
+                    const store = tx.objectStore(data[i].table);
+                    store.getAll().onsuccess = (event) => {
+                        const items = event.target.result;
+                        for (let k = 0; k < response.data.length; k++) {
+                            let isNew = true;
+                            for (let p = 0; p < items.length; p++) {
+                                for (const itemKey in items[p]) {
+                                    for (const dataKey in response.data[k]) {
+                                        if (itemKey === dataKey) {
+                                            if (response.data[k][dataKey] === items[p][itemKey]) {
+                                                isNew = false;
+                                                break;
+                                            }
+                                        }
+                                    }
+                                    if (!isNew) {
+                                        break;
+                                    }
+                                }
+                                if (!isNew) {
+                                    break;
+                                }
+                            }
+                            if (isNew) {
+                                store.add(response.data[k]);
+                            }
+                            else {
+                                store.delete(items[i][Object.keys(response.data[k])[0]]);
+                                store.put(response.data[k]);
+                            }
+                        }
+                        for (let i = 0; i < items.length; i++) {
+                            let isDead = true;
+                            for (let d = 0; d < response.data.length; d++) {
+                                for (const itemKey in items[i]) {
+                                    for (const dataKey in response.data[d]) {
+                                        if (itemKey === dataKey) {
+                                            if (response.data[d][dataKey] === items[i][itemKey]) {
+                                                isDead = false;
+                                                break;
+                                            }
+                                        }
+                                    }
+                                    if (!isDead) {
+                                        break;
+                                    }
+                                }
+                                if (!isDead) {
+                                    break;
+                                }
+                            }
+                            if (isDead) {
+                                store.delete(items[i][Object.keys(items[i])[0]]);
+                            }
+                        }
+                        tx.oncomplete = () => {
+                            synced++;
+                            if (synced === data.length) {
+                                resolve();
+                            }
+                        };
+                        tx.onerror = (error) => {
+                            console.error(error);
+                            reject(`Failed to sync data in the ${data[i].table} table`);
+                        };
+                    };
+                })
+                    .catch(() => {
+                    reject(`Failed to fetch: ${data[i].url}`);
+                });
             }
-            catch (e) {
-                // Transactions fail when the object store doesn't exist meaning it's "safe" to create the object store
+        });
+    }
+    /**
+     * Updates the database by generating new object stores (tables) when needed.
+     */
+    async upgradeDatabase(tables) {
+        var _a, _b, _c, _d, _e, _f;
+        for (let t = 0; t < tables.length; t++) {
+            let isNew = true;
+            for (const table in this.idb.objectStoreNames) {
+                if (this.idb.objectStoreNames[table] === tables[t].name) {
+                    isNew = false;
+                    break;
+                }
+            }
+            if (isNew) {
                 const store = this.idb.createObjectStore(tables[t].name, {
-                    keyPath: (_b = (_a = tables[t]) === null || _a === void 0 ? void 0 : _a.keyPath) !== null && _b !== void 0 ? _b : null,
-                    autoIncrement: (_d = (_c = tables[t]) === null || _c === void 0 ? void 0 : _c.autoIncrement) !== null && _d !== void 0 ? _d : false,
+                    keyPath: tables[t].indexes[0].name,
+                    autoIncrement: false,
                 });
                 for (let i = 0; i < tables[t].indexes.length; i++) {
-                    store.createIndex(tables[t].indexes[i].name, (_f = (_e = tables[t].indexes[i]) === null || _e === void 0 ? void 0 : _e.keyPath) !== null && _f !== void 0 ? _f : tables[t].indexes[i].name, {
-                        unique: (_h = (_g = tables[t].indexes[i]) === null || _g === void 0 ? void 0 : _g.unique) !== null && _h !== void 0 ? _h : false,
-                        multiEntry: (_k = (_j = tables[t].indexes[i]) === null || _j === void 0 ? void 0 : _j.multiEntry) !== null && _k !== void 0 ? _k : false,
+                    store.createIndex(tables[t].indexes[i].name, tables[t].indexes[i].name, {
+                        unique: (_b = (_a = tables[t].indexes[i]) === null || _a === void 0 ? void 0 : _a.unique) !== null && _b !== void 0 ? _b : false,
+                        multiEntry: (_d = (_c = tables[t].indexes[i]) === null || _c === void 0 ? void 0 : _c.multiEntry) !== null && _d !== void 0 ? _d : false,
                         // @ts-expect-error
-                        locale: (_m = (_l = tables[t].indexes[i]) === null || _l === void 0 ? void 0 : _l.locale) !== null && _m !== void 0 ? _m : null,
+                        locale: (_f = (_e = tables[t].indexes[i]) === null || _e === void 0 ? void 0 : _e.locale) !== null && _f !== void 0 ? _f : null,
                     });
                 }
             }
         }
         return;
     }
+    /**
+     * Creates the database and handles upgrading.
+     */
     init(database, version, tables) {
         return new Promise((resolve, reject) => {
             const idbRequest = indexedDB.open(database, version);
@@ -81,6 +160,15 @@ class IDBWorker {
                     this.send("ready");
                 })
                     .catch((error) => {
+                    this.send("error", error);
+                });
+                break;
+            case "sync":
+                this.sync(e.data)
+                    .then(() => {
+                    this.send("synced");
+                })
+                    .catch(error => {
                     this.send("error", error);
                 });
                 break;

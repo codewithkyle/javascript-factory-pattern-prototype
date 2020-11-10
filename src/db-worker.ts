@@ -1,18 +1,3 @@
-// idbRequest.onupgradeneeded = (event) => {
-//     
-//     
-//     objectStore.createIndex("hp", "hp", { unique: false });
-//     objectStore.createIndex("ac", "ac", { unique: false });
-//     objectStore.createIndex("str", "str", { unique: false });
-//     objectStore.createIndex("int", "int", { unique: false });
-//     objectStore.createIndex("wis", "wis", { unique: false });
-//     objectStore.createIndex("cha", "cha", { unique: false });
-//     objectStore.createIndex("dex", "dex", { unique: false });
-//     objectStore.createIndex("con", "con", { unique: false });
-//     objectStore.createIndex("actions", "actions", { unique: false });
-//     objectStore.createIndex("abilities", "abilities", { unique: false });
-// };
-
 class IDBWorker{
     private idb:IDBDatabase;
 
@@ -21,21 +6,117 @@ class IDBWorker{
         this.idb = null;
     }
 
+    private sync(
+        data:Array<{
+            table: string,
+            url: string,
+        }>,
+    ): Promise<void>{
+        let synced = 0;
+        return new Promise((resolve, reject) => {
+            for (let i = 0; i < data.length; i++){
+                fetch(data[i].url, {
+                    headers: new Headers({
+                        Accept: "application/json"
+                    })
+                })
+                .then(request => request.json())
+                .then(response => {
+                    const tx = this.idb.transaction(data[i].table, 'readwrite');
+                    const store = tx.objectStore(data[i].table);
+                    store.getAll().onsuccess = (event:any) => {
+                        const items = event.target.result;
+                        for (let k = 0; k < response.data.length; k++){
+                            let isNew = true;
+                            for (let p = 0; p < items.length; p++){
+                                for (const itemKey in items[p]){
+                                    for (const dataKey in response.data[k]){
+                                        if (itemKey === dataKey){
+                                            if (response.data[k][dataKey] === items[p][itemKey]){
+                                                isNew = false;
+                                                break;
+                                            }
+                                        }
+                                    }
+                                    if (!isNew){
+                                        break;
+                                    }
+                                }
+                                if (!isNew){
+                                    break;
+                                }
+                            }
+                            if (isNew){
+                                store.add(response.data[k]);
+                            }else{
+                                store.delete(items[i][Object.keys(response.data[k])[0]]);
+                                store.put(response.data[k]);
+                            }
+                        }
+                        for (let i = 0; i < items.length; i++){
+                            let isDead = true;
+                            for (let d = 0; d < response.data.length; d++){
+                                for (const itemKey in items[i]){
+                                    for (const dataKey in response.data[d]){
+                                        if (itemKey === dataKey){
+                                            if (response.data[d][dataKey] === items[i][itemKey]){
+                                                isDead = false;
+                                                break;
+                                            }
+                                        }
+                                    }
+                                    if (!isDead){
+                                        break;
+                                    }
+                                }
+                                if (!isDead){
+                                    break;
+                                }
+                            }
+                            if (isDead){
+                                store.delete(items[i][Object.keys(items[i])[0]]);
+                            }
+                        }
+                        tx.oncomplete = () => {
+                            synced++;
+                            if (synced === data.length){
+                                resolve();
+                            }
+                        }
+                        tx.onerror = (error) => {
+                            console.error(error);
+                            reject(`Failed to sync data in the ${data[i].table} table`);
+                        }
+                    };
+                })
+                .catch(() => {
+                    reject(`Failed to fetch: ${data[i].url}`);
+                });
+            }
+        });
+    }
+
+    /**
+     * Updates the database by generating new object stores (tables) when needed.
+     */
     private async upgradeDatabase(tables:any){
         for (let t = 0; t < tables.length; t++) {
-            try{
-                const transaction = this.idb.transaction(tables[t].name, "readwrite");
-                // Do nothing when transactions are successful, we can't modify existing tables in IDB
-            }catch (e){
-                // Transactions fail when the object store doesn't exist meaning it's "safe" to create the object store
+            let isNew = true;
+            for (const table in this.idb.objectStoreNames){
+                if (this.idb.objectStoreNames[table] === tables[t].name){
+                    isNew = false;
+                    break;
+                }
+            }
+            if (isNew){
                 const store = this.idb.createObjectStore(tables[t].name, {
-                    keyPath: tables[t]?.keyPath ?? null,
-                    autoIncrement: tables[t]?.autoIncrement ?? false,
+                    keyPath: tables[t].indexes[0].name,
+                    autoIncrement: false,
                 });
                 for (let i = 0; i < tables[t].indexes.length; i++){
                     store.createIndex(
                         tables[t].indexes[i].name, 
-                        tables[t].indexes[i]?.keyPath ?? tables[t].indexes[i].name, 
+                        tables[t].indexes[i].name, 
                         {
                             unique: tables[t].indexes[i]?.unique ?? false,
                             multiEntry: tables[t].indexes[i]?.multiEntry ?? false,
@@ -49,6 +130,9 @@ class IDBWorker{
         return;
     }
 
+    /**
+     * Creates the database and handles upgrading.
+     */
     private init(database:string, version:number, tables:unknown): Promise<void>{
         return new Promise((resolve, reject) => {
             const idbRequest:any = indexedDB.open(database, version);
@@ -90,6 +174,15 @@ class IDBWorker{
                         this.send("ready");
                     })
                     .catch((error) => {
+                        this.send("error", error);
+                    });
+                break;
+            case "sync":
+                this.sync(e.data)
+                    .then(() => {
+                        this.send("synced");
+                    })
+                    .catch(error => {
                         this.send("error", error);
                     });
                 break;

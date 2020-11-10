@@ -4,8 +4,6 @@
     "tables": [
         {
             "name": "colors",
-            "autoIncrement": true,
-            "keyPath": "name",
             "indexes": [
                 {
                     "name": "name",
@@ -19,8 +17,6 @@
         },
         {
             "name": "patterns",
-            "autoIncrement": true,
-            "keyPath": "name",
             "indexes": [
                 {
                     "name": "name",

@@ -186,6 +186,10 @@ a {
  */
 /* Removes all default margins */
 
+p {
+    margin: 0;
+}
+
 /* Resets default heading styles */
 
 /* Resets default list styles */
