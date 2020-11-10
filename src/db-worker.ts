@@ -22,22 +22,28 @@ class IDBWorker{
     }
 
     private async upgradeDatabase(tables:any){
-        for (const table in tables) {
-            const store = this.idb.createObjectStore(table, {
-                keyPath: tables[table]?.keyPath ?? null,
-                autoIncrement: tables[table]?.autoIncrement ?? false,
-            });
-            for (let i = 0; i < tables[table].indexes.length; i++){
-                store.createIndex(
-                    tables[table].indexes[i].name, 
-                    tables[table].indexes[i]?.keyPath ?? tables[table].indexes[i].name, 
-                    {
-                        unique: tables[table].indexes[i]?.unique ?? false,
-                        multiEntry: tables[table].indexes[i]?.multiEntry ?? false,
-                        // @ts-expect-error
-                        locale: tables[table].indexes[i]?.locale ?? null,
-                    }
-                );
+        for (let t = 0; t < tables.length; t++) {
+            try{
+                const transaction = this.idb.transaction(tables[t].name, "readwrite");
+                // Do nothing when transactions are successful, we can't modify existing tables in IDB
+            }catch (e){
+                // Transactions fail when the object store doesn't exist meaning it's "safe" to create the object store
+                const store = this.idb.createObjectStore(tables[t].name, {
+                    keyPath: tables[t]?.keyPath ?? null,
+                    autoIncrement: tables[t]?.autoIncrement ?? false,
+                });
+                for (let i = 0; i < tables[t].indexes.length; i++){
+                    store.createIndex(
+                        tables[t].indexes[i].name, 
+                        tables[t].indexes[i]?.keyPath ?? tables[t].indexes[i].name, 
+                        {
+                            unique: tables[t].indexes[i]?.unique ?? false,
+                            multiEntry: tables[t].indexes[i]?.multiEntry ?? false,
+                            // @ts-expect-error
+                            locale: tables[t].indexes[i]?.locale ?? null,
+                        }
+                    );
+                }
             }
         }
         return;

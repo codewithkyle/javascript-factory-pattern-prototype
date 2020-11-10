@@ -19,18 +19,25 @@ class IDBWorker {
     }
     async upgradeDatabase(tables) {
         var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m;
-        for (const table in tables) {
-            const store = this.idb.createObjectStore(table, {
-                keyPath: (_b = (_a = tables[table]) === null || _a === void 0 ? void 0 : _a.keyPath) !== null && _b !== void 0 ? _b : null,
-                autoIncrement: (_d = (_c = tables[table]) === null || _c === void 0 ? void 0 : _c.autoIncrement) !== null && _d !== void 0 ? _d : false,
-            });
-            for (let i = 0; i < tables[table].indexes.length; i++) {
-                store.createIndex(tables[table].indexes[i].name, (_f = (_e = tables[table].indexes[i]) === null || _e === void 0 ? void 0 : _e.keyPath) !== null && _f !== void 0 ? _f : tables[table].indexes[i].name, {
-                    unique: (_h = (_g = tables[table].indexes[i]) === null || _g === void 0 ? void 0 : _g.unique) !== null && _h !== void 0 ? _h : false,
-                    multiEntry: (_k = (_j = tables[table].indexes[i]) === null || _j === void 0 ? void 0 : _j.multiEntry) !== null && _k !== void 0 ? _k : false,
-                    // @ts-expect-error
-                    locale: (_m = (_l = tables[table].indexes[i]) === null || _l === void 0 ? void 0 : _l.locale) !== null && _m !== void 0 ? _m : null,
+        for (let t = 0; t < tables.length; t++) {
+            try {
+                const transaction = this.idb.transaction(tables[t].name, "readwrite");
+                // Do nothing when transactions are successful, we can't modify existing tables in IDB
+            }
+            catch (e) {
+                // Transactions fail when the object store doesn't exist meaning it's "safe" to create the object store
+                const store = this.idb.createObjectStore(tables[t].name, {
+                    keyPath: (_b = (_a = tables[t]) === null || _a === void 0 ? void 0 : _a.keyPath) !== null && _b !== void 0 ? _b : null,
+                    autoIncrement: (_d = (_c = tables[t]) === null || _c === void 0 ? void 0 : _c.autoIncrement) !== null && _d !== void 0 ? _d : false,
                 });
+                for (let i = 0; i < tables[t].indexes.length; i++) {
+                    store.createIndex(tables[t].indexes[i].name, (_f = (_e = tables[t].indexes[i]) === null || _e === void 0 ? void 0 : _e.keyPath) !== null && _f !== void 0 ? _f : tables[t].indexes[i].name, {
+                        unique: (_h = (_g = tables[t].indexes[i]) === null || _g === void 0 ? void 0 : _g.unique) !== null && _h !== void 0 ? _h : false,
+                        multiEntry: (_k = (_j = tables[t].indexes[i]) === null || _j === void 0 ? void 0 : _j.multiEntry) !== null && _k !== void 0 ? _k : false,
+                        // @ts-expect-error
+                        locale: (_m = (_l = tables[t].indexes[i]) === null || _l === void 0 ? void 0 : _l.locale) !== null && _m !== void 0 ? _m : null,
+                    });
+                }
             }
         }
         return;
@@ -44,7 +51,6 @@ class IDBWorker {
             };
             idbRequest.onupgradeneeded = async (event) => {
                 this.idb = event.target.result;
-                console.log("needs update");
                 await this.upgradeDatabase(tables);
                 resolve();
             };

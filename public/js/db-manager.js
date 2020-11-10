@@ -16,9 +16,9 @@ class DBManager {
             this.worker.postMessage({
                 type: "init",
                 data: {
-                    database: "demo",
-                    version: 2,
-                    tables: response,
+                    database: response.database,
+                    version: response.version,
+                    tables: response.tables,
                 },
             });
         }
@@ -27,6 +27,9 @@ class DBManager {
         const e = event.data;
         switch (e.type) {
             case "ready":
+                break;
+            case "error":
+                console.error(e.data);
                 break;
             default:
                 console.warn(`Unhandled DB Worker response message type: ${e.type}`);

@@ -192,6 +192,11 @@ a {
 
 /* Images and other replaced elements are set as block level elements */
 
+object {
+    display: block;
+    vertical-align: middle;
+}
+
 /* Resets global border styles */
 *,
 *::before,

@@ -1,30 +1,36 @@
 {
-    "colors": {
-        "autoIncrement": true,
-        "keyPath": "name",
-        "indexes": [
-            {
-                "name": "name",
-                "unique": true
-            },
-            {
-                "name": "entryId",
-                "unique": true
-            }
-        ]
-    },
-    "patterns": {
-        "autoIncrement": true,
-        "keyPath": "name",
-        "indexes": [
-            {
-                "name": "name",
-                "unique": true
-            },
-            {
-                "name": "entryId",
-                "unique": true
-            }
-        ]
-    }
+    "database": "demo",
+    "version": 1,
+    "tables": [
+        {
+            "name": "colors",
+            "autoIncrement": true,
+            "keyPath": "name",
+            "indexes": [
+                {
+                    "name": "name",
+                    "unique": true
+                },
+                {
+                    "name": "entryId",
+                    "unique": true
+                }
+            ]
+        },
+        {
+            "name": "patterns",
+            "autoIncrement": true,
+            "keyPath": "name",
+            "indexes": [
+                {
+                    "name": "name",
+                    "unique": true
+                },
+                {
+                    "name": "entryId",
+                    "unique": true
+                }
+            ]
+        }
+    ]
 }
