@@ -2,7 +2,7 @@
 
 - [x] Build app shell
 - [x] Generate IDB tables via JSON
-- [ ] Fetch patters and colors from the *"API"* and save/sync with IDB
+- [x] Fetch patters and colors from the *"API"* and save/sync with IDB
 - [ ] Save user generated patterns and colors in IDB
 - [ ] User can create a product
     - [ ] Use patterns and colors from IDB

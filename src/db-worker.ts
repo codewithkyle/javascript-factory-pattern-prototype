@@ -26,6 +26,8 @@ class IDBWorker{
                     const store = tx.objectStore(data[i].table);
                     store.getAll().onsuccess = (event:any) => {
                         const items = event.target.result;
+
+                        // Add or update existing data
                         for (let k = 0; k < response.data.length; k++){
                             let isNew = true;
                             for (let p = 0; p < items.length; p++){
@@ -53,6 +55,8 @@ class IDBWorker{
                                 store.put(response.data[k]);
                             }
                         }
+
+                        // Delete old data
                         for (let i = 0; i < items.length; i++){
                             let isDead = true;
                             for (let d = 0; d < response.data.length; d++){
