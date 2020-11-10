@@ -9,10 +9,24 @@
 
     <link href="/brixi.css" rel="stylesheet" />
     <link href="/css/normalize.css" rel="stylesheet" />
+    <link href="/css/layout.css" rel="stylesheet" />
 
-    <script src="/js/example.js" type="module"></script>
+    <script src="/js/db-manager.js" type="module"></script>
 </head>
 <body>
-    Example
+    <main>
+        <aside>
+            <a href="/">Dashboard</a>
+            <a href="/purchase-orders">Purchase Orders</a>
+            <a href="/purchase-orders/new">Create Purchase Order</a>
+            <a href="/products">Products</a>
+            <a href="/products/new">Create Product</a>
+            <a href="/patterns">Patterns</a>
+            <a href="/colors">Colors</a>
+        </aside>
+        <article>
+            <section class="block w-full mx-auto my-2 p-1 radius-0.25 bg-white border-1 border-solid border-grey-300" style="max-width: 1024px;"></section>
+        </article>
+    </main>
 </body>
 </html>

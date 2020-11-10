@@ -28,6 +28,10 @@ body {
  * Render the `main` element consistently in IE.
  */
 
+main {
+  display: block;
+}
+
 /**
  * Correct the font size and margin on `h1` elements within `section` and
  * `article` contexts in Chrome, Firefox, and Safari.
@@ -52,6 +56,10 @@ body {
 /**
  * Remove the gray background on active links in IE 10.
  */
+
+a {
+  background-color: transparent;
+}
 
 /**
  * 1. Remove the bottom border in Chrome 57-
@@ -196,3 +204,8 @@ body {
 }
 
 /** Resets button styles */
+
+a{
+    text-decoration: none;
+    color: inherit;
+}
